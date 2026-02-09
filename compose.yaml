@@ -1,0 +1,48 @@
+services:
+  node:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lama_backend
+    ports:
+      - '8800:8800'
+    environment:
+      DB_HOST: mysql
+      DB_USER: root
+      DB_PASSWORD: 1234
+      DB_NAME: test
+    depends_on:
+      - mysql
+  react:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lama_frontend
+    ports:
+      - '5173:5173'
+    depends_on:
+      - node
+
+  mysql:
+    image: 'mysql:5.7'
+    container_name: lama_mysql
+    environment:
+      MYSQL_DATABASE: test
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - '3306:3306'
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  phpmyadmin:
+    image: 'phpmyadmin/phpmyadmin'
+    container_name: lama_phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    ports:
+      - '8090:90'
+    depends_on:
+      - mysql
+volumes:
+  mysql_data:
